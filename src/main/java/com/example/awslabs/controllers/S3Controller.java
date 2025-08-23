@@ -1,0 +1,75 @@
+package com.example.awslabs.controllers;
+
+import java.io.IOException;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.example.awslabs.service.S3Service;
+
+import jakarta.servlet.http.HttpServletResponse;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
+import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RestController
+@RequestMapping("/s3")
+public class S3Controller {
+	
+	private final S3Service s3Service;
+
+	public S3Controller(S3Service s3Service) {
+		this.s3Service = s3Service;
+	}
+	
+	@GetMapping("/buckets")
+	public String listBuckets()
+	{
+	    return s3Service.listBuckets();
+	}
+	
+	@PostMapping("/upload")
+	public ResponseEntity<String> uploadFile(@RequestParam("bucketName") String bucketName, 
+							@RequestParam("file") MultipartFile file)  throws S3Exception, AwsServiceException, SdkClientException, IOException {
+		
+		log.info("Received upload request for file '{}' to bucket '{}'", file.getOriginalFilename(), bucketName);
+		s3Service.uploadFile(bucketName, file);
+		log.info("Upload request completed for file '{}'", file.getOriginalFilename());
+		return ResponseEntity.ok("File uploaded successfully: " + file.getOriginalFilename());
+	}
+	
+	@GetMapping("/download")
+	public ResponseEntity<?> downloadFile(@RequestParam("bucketName") String bucketName,
+			@RequestParam("key") String key){
+
+		key = key.trim();
+		log.info("Download request for file '{}' from bucket '{}'", key, bucketName);
+		byte []fileData = s3Service.downloadFile(bucketName, key);
+		log.info("File '{}' downloaded successfully", key);
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + key + "\"")
+				.contentType(MediaType.APPLICATION_OCTET_STREAM)
+				.body(fileData);
+	}
+	
+	@GetMapping("download/stream")
+	public void downloadFileStream(@RequestParam("bucketName") String bucketName,
+									@RequestParam("key") String key,
+									HttpServletResponse response) throws IOException
+	{
+		s3Service.downloadFileStream(bucketName, key, response);
+	}
+	
+}
