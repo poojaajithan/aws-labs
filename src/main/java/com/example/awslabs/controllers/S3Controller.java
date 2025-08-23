@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -72,6 +73,16 @@ public class S3Controller {
 		 List<String> bucketObjs = s3Service.listObjects(bucketName);
 		 log.info("Found {} objects in bucket '{}'", bucketObjs.size(), bucketName);
 		 return ResponseEntity.ok(bucketObjs);
+	}
+	
+	@DeleteMapping("/delete")
+	public ResponseEntity<String> deleteFile(@RequestParam("bucketName") String bucketName,
+									@RequestParam("key") String key)
+	{
+		 log.info("Delete request for file '{}' in bucket '{}'", key, bucketName);
+		 s3Service.deleteFile(bucketName, key);
+		 log.info("File '{}' deleted successfully from bucket '{}'", key, bucketName);
+		 return ResponseEntity.ok("File deleted successfully: " + key);
 	}
 	
 	@GetMapping("download/stream")

@@ -20,6 +20,7 @@ import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListBucketsResponse;
@@ -143,5 +144,14 @@ public class S3Service {
 		ListObjectsV2Response response = s3.listObjectsV2(request);
 		
 		return response.contents().stream().map(S3Object::key).collect(Collectors.toList());
+	}
+	
+	public void deleteFile(String bucketName, String key)
+	{
+		DeleteObjectRequest delRequest = DeleteObjectRequest.builder()
+							.bucket(bucketName)
+							.key(key)
+							.build();
+		s3.deleteObject(delRequest);
 	}
 }
