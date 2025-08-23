@@ -109,4 +109,13 @@ public class S3Controller {
         return ResponseEntity.ok(s3Service.generatePresignedUrlForUpload(bucketName, key));
 	}
 	
+	//large file upload
+	@PostMapping("/upload/large")
+	public ResponseEntity<String> uploadLargeFile(@RequestParam("bucketName") String bucketName,
+													@RequestParam("file") MultipartFile file) throws IOException
+	{
+		log.info("Large file upload request received: bucket={}, file={}", bucketName, file.getOriginalFilename());
+        s3Service.uploadLargeFile(bucketName, file);
+        return ResponseEntity.ok("Large file uploaded successfully: " + file.getOriginalFilename());
+	}
 }

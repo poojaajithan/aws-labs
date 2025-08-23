@@ -1,7 +1,10 @@
 package com.example.awslabs.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,8 +21,15 @@ import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.AbortMultipartUploadRequest;
+import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
+import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
+import software.amazon.awssdk.services.s3.model.CompletedPart;
+import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
+import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
@@ -29,6 +39,8 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.model.UploadPartRequest;
+import software.amazon.awssdk.services.s3.model.UploadPartResponse;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -153,5 +165,68 @@ public class S3Service {
 							.key(key)
 							.build();
 		s3.deleteObject(delRequest);
+	}
+
+	public void uploadLargeFile(String bucketName, MultipartFile file) throws IOException {
+		String key = file.getOriginalFilename();
+		long partSize = 5*1024*1024; //5 MB
+		List<CompletedPart> completedParts = new ArrayList<>();
+		
+		// Step 1 → Initiate upload
+		CreateMultipartUploadRequest request = CreateMultipartUploadRequest.builder()
+																	        .bucket(bucketName)
+																	        .key(key)
+																	        .build();
+		CreateMultipartUploadResponse createResponse = s3.createMultipartUpload(request);
+		String uploadId = createResponse.uploadId();
+        log.info("Multipart upload started for {} with uploadId={}", key, uploadId);
+        
+        try (InputStream inputStream = file.getInputStream()) {
+            byte[] buffer = new byte[(int) partSize];
+            int bytesRead;
+            int partNumber = 1;
+            // Step 2 → Upload parts
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+            	UploadPartRequest uploadRequest = UploadPartRequest.builder()
+													                .bucket(bucketName)
+													                .key(key)
+													                .uploadId(uploadId)
+													                .partNumber(partNumber)
+													                .build();
+            	UploadPartResponse uploadPartResponse = s3.uploadPart(uploadRequest, 
+            														RequestBody.fromBytes(Arrays.copyOf(buffer, bytesRead)));
+            	completedParts.add(CompletedPart.builder()
+                        .partNumber(partNumber)
+                        .eTag(uploadPartResponse.eTag())
+                        .build());
+
+                log.info("Uploaded part {} for file {}", partNumber, key);
+                partNumber++;
+            }
+            
+         // Step 3 → Complete upload
+            CompleteMultipartUploadRequest multipartRequest = CompleteMultipartUploadRequest.builder()
+																				            .bucket(bucketName)
+																				            .key(key)
+																				            .uploadId(uploadId)
+																				            .multipartUpload(
+																				                    CompletedMultipartUpload.builder()
+																				                            .parts(completedParts)
+																				                            .build()).build();
+            s3.completeMultipartUpload(multipartRequest);                
+            log.info("Multipart upload completed for {}", key);
+         }
+        catch (Exception ex) {
+            // Step 4 → Abort upload if something goes wrong
+            log.error("Multipart upload failed, aborting uploadId={} for file={}", uploadId, key, ex);
+            s3.abortMultipartUpload(
+                    AbortMultipartUploadRequest.builder()
+                            .bucket(bucketName)
+                            .key(key)
+                            .uploadId(uploadId)
+                            .build()
+            );
+            throw ex; // will be caught by @ControllerAdvice
+        }
 	}
 }
