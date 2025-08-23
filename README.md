@@ -37,4 +37,24 @@ It is structured for **interview preparation** and showcases best practices such
 
 ## 📡 API Endpoints (S3 Module)
 
+Use these commands directly in your terminal:
+
+```bash
+# List Buckets
+curl -X GET "http://localhost:8080/s3/buckets"
+
+# Upload File
+curl -X POST "http://localhost:8080/s3/upload" \
+  -F "bucketName=my-bucket" \
+  -F "file=@/path/to/local/file.txt"
+
+# Download File
+curl -X GET "http://localhost:8080/s3/download?bucketName=my-bucket&key=file.txt" \
+  -o file.txt
+
+# Stream Download (for huge files)
+curl -X GET "http://localhost:8080/s3/download/stream?bucketName=my-bucket&key=bigfile.zip" \
+  -o bigfile.zip
+
+
 ### List Buckets
