@@ -1,6 +1,7 @@
 package com.example.awslabs.controllers;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -62,6 +63,15 @@ public class S3Controller {
 				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + key + "\"")
 				.contentType(MediaType.APPLICATION_OCTET_STREAM)
 				.body(fileData);
+	}
+	
+	@GetMapping("/objects")
+	public ResponseEntity<List<String>> listObjects(@RequestParam("bucketName") String bucketName)
+	{
+		 log.info("Listing objects in bucket '{}'", bucketName);
+		 List<String> bucketObjs = s3Service.listObjects(bucketName);
+		 log.info("Found {} objects in bucket '{}'", bucketObjs.size(), bucketName);
+		 return ResponseEntity.ok(bucketObjs);
 	}
 	
 	@GetMapping("download/stream")
