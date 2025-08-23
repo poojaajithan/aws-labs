@@ -72,4 +72,20 @@ public class S3Controller {
 		s3Service.downloadFileStream(bucketName, key, response);
 	}
 	
+	@GetMapping("/presigned/download")
+	public ResponseEntity<String> getPresignedDownloadUrl(@RequestParam("bucketName") String bucketName,
+														@RequestParam("key") String key)
+	{
+        log.info("API request: presigned download URL for bucket={}, key={}", bucketName, key);
+        return ResponseEntity.ok(s3Service.generatePresignedUrlForDownload(bucketName, key));
+	}
+	
+	@GetMapping("/presigned/upload")
+	public ResponseEntity<String> getPresignedUploadUrl(@RequestParam("bucketName") String bucketName,
+														@RequestParam("key") String key)
+	{
+        log.info("API request: presigned download URL for bucket={}, key={}", bucketName, key);
+        return ResponseEntity.ok(s3Service.generatePresignedUrlForUpload(bucketName, key));
+	}
+	
 }

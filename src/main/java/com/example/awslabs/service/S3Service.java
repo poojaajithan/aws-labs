@@ -1,6 +1,7 @@
 package com.example.awslabs.service;
 
 import java.io.IOException;
+import java.time.Duration;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -22,7 +23,9 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListBucketsResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
-
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -72,18 +75,59 @@ public class S3Service {
 				.bucket(bucketName)
 				.key(key)
 				.build();
-		ResponseInputStream<GetObjectResponse> s3Stream = s3.getObject(getRequest);
-		ServletOutputStream out = response.getOutputStream();
-
-		response.setContentType("application/octet-stream");
-		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + key + "\"");
-
-		// Stream data in chunks (8KB buffer)
-		byte[] buffer = new byte[8192];
-		int bytesRead;
-		while ((bytesRead = s3Stream.read(buffer)) != -1) {
-			out.write(buffer, 0, bytesRead);
+		try(ResponseInputStream<GetObjectResponse> s3Stream = s3.getObject(getRequest);
+				ServletOutputStream out = response.getOutputStream())
+		{
+			response.setContentType("application/octet-stream");
+			response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + key + "\"");
+	
+			// Stream data in chunks (8KB buffer)
+			byte[] buffer = new byte[8192];
+			int bytesRead;
+			while ((bytesRead = s3Stream.read(buffer)) != -1) {
+				out.write(buffer, 0, bytesRead);
+			}
+			out.flush();
 		}
-		out.flush();
+	}
+
+	public String generatePresignedUrlForDownload(String bucketName, String key) {
+        log.info("Generating presigned download URL for bucket={}, key={}", bucketName, key);
+        try(S3Presigner presigner = S3Presigner.create())
+        {
+        	GetObjectRequest getRequest = GetObjectRequest.builder()
+    				.bucket(bucketName)
+    				.key(key)
+    				.build();
+        	
+        	GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+        			.signatureDuration(Duration.ofMinutes(10))
+        			.getObjectRequest(getRequest)
+        			.build();
+        	
+        	String url = presigner.presignGetObject(presignRequest).url().toString();
+            log.debug("Presigned download URL generated: {}", url);
+            return url;
+        }
+	}
+
+	public String generatePresignedUrlForUpload(String bucketName, String key) {
+        log.info("Generating presigned upload URL for bucket={}, key={}", bucketName, key);
+        try(S3Presigner presigner = S3Presigner.create())
+        {
+        	PutObjectRequest putRequest = PutObjectRequest.builder()
+    				.bucket(bucketName)
+    				.key(key)
+    				.build();
+        	
+        	PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+        			.signatureDuration(Duration.ofMinutes(10))
+        			.putObjectRequest(putRequest)
+        			.build();
+        	
+        	String url = presigner.presignPutObject(presignRequest).url().toString();
+            log.debug("Presigned download URL generated: {}", url);
+            return url;
+        }
 	}
 }
