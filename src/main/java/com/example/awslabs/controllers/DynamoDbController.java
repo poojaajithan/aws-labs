@@ -3,6 +3,7 @@ package com.example.awslabs.controllers;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,5 +40,13 @@ public class DynamoDbController {
 	{
 		dynamoDbService.putItem(tableName, id, name);
 		return ResponseEntity.ok("Item inserted successfully");
+	}
+	
+	@DeleteMapping("/delete")
+	public ResponseEntity<String> deleteItem(@RequestParam("tableName") String tableName, 
+						@RequestParam("id") String id)
+	{
+		dynamoDbService.deleteItem(tableName, id);
+		return ResponseEntity.ok("Item deleted successfully");
 	}
 }
