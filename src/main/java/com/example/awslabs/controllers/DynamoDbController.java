@@ -1,5 +1,6 @@
 package com.example.awslabs.controllers;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
@@ -44,9 +45,16 @@ public class DynamoDbController {
 	
 	@DeleteMapping("/delete")
 	public ResponseEntity<String> deleteItem(@RequestParam("tableName") String tableName, 
-						@RequestParam("id") String id)
+											 @RequestParam("id") String id)
 	{
 		dynamoDbService.deleteItem(tableName, id);
 		return ResponseEntity.ok("Item deleted successfully");
+	}
+	
+	@GetMapping("/query")
+	public ResponseEntity<List<Map<String,AttributeValue>>> queryItems(@RequestParam("tableName") String tableName, 
+			 														   @RequestParam("id") String id)
+	{
+		return ResponseEntity.ok(dynamoDbService.queryById(tableName, id));
 	}
 }

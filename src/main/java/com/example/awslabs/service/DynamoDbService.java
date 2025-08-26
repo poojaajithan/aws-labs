@@ -1,6 +1,7 @@
 package com.example.awslabs.service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 
 @Slf4j
 @Service
@@ -58,6 +60,20 @@ public class DynamoDbService {
 																.build();
 		dynamoDb.deleteItem(deleteItemRequest);
 		log.info("Item deleted: {}", id);
+	}
+	
+	public List<Map<String,AttributeValue>> queryById(String tableName, String id)
+	{
+		Map<String,AttributeValue> key = new HashMap<>();
+		key.put(":idVal", AttributeValue.builder().s(id).build());
+		
+		QueryRequest queryRequest = QueryRequest.builder()
+												.tableName(tableName)
+												.keyConditionExpression("id := idVal")
+												.expressionAttributeValues(key)
+												.build();
+		return dynamoDb.query(queryRequest).items();
+		
 	}
 
 }
