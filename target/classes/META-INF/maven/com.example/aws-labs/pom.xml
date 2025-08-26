@@ -45,7 +45,10 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
         </dependency>
-        
+         <dependency>
+	        <groupId>software.amazon.awssdk</groupId>
+	        <artifactId>dynamodb</artifactId>
+    	</dependency>
         <dependency>
 		    <groupId>org.projectlombok</groupId>
 		    <artifactId>lombok</artifactId>
