@@ -29,11 +29,13 @@ public class DynamoDbController {
 		this.dynamoDbService = dynamoDbService;
 	}
 	
-	@GetMapping("/get")
-	public ResponseEntity<Map<String, AttributeValue>> getItem(@RequestParam("tableName") String tableName, 
-						@RequestParam("id") String id)
+	@GetMapping("/dynamo/item/{tableName}/{keyName}/{keyValue}")
+	public ResponseEntity<DynamoRecordDTO > getItem(@PathVariable("tableName") String tableName,
+														        @PathVariable("keyName") String keyName,
+														        @PathVariable("keyValue") String keyValue)
 	{
-		return ResponseEntity.ok(dynamoDbService.getItem(tableName, id));
+		log.info("Received getItem request for table={}, key={}={}", tableName, keyName, keyValue);
+		return ResponseEntity.ok(dynamoDbService.getItem(tableName, keyName, keyValue));
 	}
 	
 	@PostMapping("/put")

@@ -3,6 +3,7 @@ package com.example.awslabs.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
@@ -30,16 +32,30 @@ public class DynamoDbService {
 		this.dynamoDb = dynamoDb;
 	}
 
-	public Map<String, AttributeValue> getItem(String tableName, String id) {
-		Map<String, AttributeValue> key = new HashMap<>();
-		key.put("id", AttributeValue.builder().s(id).build());
+	public DynamoRecordDTO getItem(String tableName, String keyName, String keyValue) 
+	{
+	    log.info("Fetching item from table={}, key={}={}", tableName, keyName, keyValue);
 		
-		GetItemRequest getItemRequest = GetItemRequest.builder()
+		GetItemRequest request = GetItemRequest.builder()
 														.tableName(tableName)
-														.key(key)
+														.key(Map.of(keyName, AttributeValue.builder().s(keyValue).build()))
 														.build(); 
+		GetItemResponse response = dynamoDb.getItem(request);
 		
-		return dynamoDb.getItem(getItemRequest).item();
+		if (!response.hasItem())
+		{
+			throw new NoSuchElementException("Item not found for key = " + keyValue);
+		}
+		
+		Map<String, String> attributes = response.item().entrySet().stream()
+	            .collect(Collectors.toMap(
+	                    Map.Entry::getKey,
+	                    e -> e.getValue().s() != null ? e.getValue().s() :
+	                         e.getValue().n() != null ? e.getValue().n() :
+	                         e.getValue().bool() != null ? e.getValue().bool().toString() : "UNSUPPORTED"
+	            ));
+		
+		return new DynamoRecordDTO(attributes);
 	}
 	
 	public void putItem(String tableName, String id, String name)
