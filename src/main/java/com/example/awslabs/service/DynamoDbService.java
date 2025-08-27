@@ -13,6 +13,7 @@ import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
+import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 
 @Slf4j
 @Service
@@ -76,4 +77,25 @@ public class DynamoDbService {
 		
 	}
 
+	public void updateItem(String tableName, String id, String newValue)
+	{
+		Map<String,AttributeValue> key = new HashMap<>();
+		key.put("id", AttributeValue.builder().s(id).build());
+		
+		Map<String, String> expressionAttributeNames = new HashMap<>();
+		expressionAttributeNames.put("#val", "value"); //value is a reserved word in update expression
+		
+	    Map<String, AttributeValue> expressionAttributeValues = new HashMap<>();
+	    expressionAttributeValues.put(":newValue", AttributeValue.builder().s(newValue).build());
+	    
+	    UpdateItemRequest updateItemRequest = UpdateItemRequest.builder()
+	    														.tableName(tableName)
+	    														.key(key)
+	    														.updateExpression("SET #val = :newValue")
+	    														.expressionAttributeNames(expressionAttributeNames)
+	    														.expressionAttributeValues(expressionAttributeValues)
+	    														.build();
+	    dynamoDb.updateItem(updateItemRequest);
+	    log.info("Item with id={} updated in table={} with value={}", id, tableName, newValue);
+	}
 }

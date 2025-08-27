@@ -57,4 +57,15 @@ public class DynamoDbController {
 	{
 		return ResponseEntity.ok(dynamoDbService.queryById(tableName, id));
 	}
+	
+	@GetMapping("/update")
+	public ResponseEntity<String> updateItem(@RequestParam("tableName") String tableName, 
+			 								 @RequestParam("id") String id,
+			 								 @RequestParam("newValue") String newValue)
+	{
+		dynamoDbService.updateItem(tableName, id, newValue);
+		return ResponseEntity.ok("Item updated successfully");
+	}
+	
+	
 }
