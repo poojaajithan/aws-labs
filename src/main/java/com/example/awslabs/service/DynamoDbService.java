@@ -3,8 +3,11 @@ package com.example.awslabs.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+
+import com.example.awslabs.dto.DynamoRecordDTO;
 
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -13,6 +16,8 @@ import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
+import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
+import software.amazon.awssdk.services.dynamodb.model.ScanResponse;
 import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 
 @Slf4j
@@ -97,5 +102,27 @@ public class DynamoDbService {
 	    														.build();
 	    dynamoDb.updateItem(updateItemRequest);
 	    log.info("Item with id={} updated in table={} with value={}", id, tableName, newValue);
+	}
+
+	public List<DynamoRecordDTO> scanTable(String tableName) {
+	    log.info("Scanning table={}", tableName);
+	    
+	    ScanRequest request = ScanRequest.builder()
+								    		.tableName(tableName)
+								    		.build();
+	    ScanResponse response = dynamoDb.scan(request);
+	    
+	    return response.items().stream()
+	    		.map(item -> 
+				    {
+				    	Map<String, String> attributes = item.entrySet().stream()
+				    			.collect(Collectors.toMap(
+				    					Map.Entry::getKey, 
+							    			e -> e.getValue().s() != null ? e.getValue().s() :
+							    				 e.getValue().n() != null ? e.getValue().n() :
+							    				 e.getValue().bool() != null ? e.getValue().bool().toString() : "UNSUPPORTED"
+				    	));
+				    	return new DynamoRecordDTO(attributes);
+				    }).collect(Collectors.toList());
 	}
 }
