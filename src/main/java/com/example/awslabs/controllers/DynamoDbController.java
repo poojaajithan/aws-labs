@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -77,5 +78,15 @@ public class DynamoDbController {
 	    log.info("Received scan request for table={}", tableName);
 	    List<DynamoRecordDTO> records = dynamoDbService.scanTable(tableName);
 	    return ResponseEntity.ok(records);
+	}
+	
+	@PutMapping("/users/{userId}/updateName")
+	public ResponseEntity<String> updateUserName(
+	        @PathVariable("userId") String userId,
+	        @RequestParam("newName") String newName,
+	        @RequestParam("tableName") String tableName) 
+	{
+	    dynamoDbService.updateUserNameIfExists(tableName,userId, newName);
+	    return ResponseEntity.ok("User name updated if record exists");
 	}
 }

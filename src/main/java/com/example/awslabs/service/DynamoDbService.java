@@ -141,4 +141,29 @@ public class DynamoDbService {
 				    	return new DynamoRecordDTO(attributes);
 				    }).collect(Collectors.toList());
 	}
+	
+	public void updateUserNameIfExists(String tableName, String userId, String newName) {
+		log.info("Updating user name for userId={} with condition", userId);
+		
+		Map<String,AttributeValue> key = new HashMap<>();
+		key.put("id", AttributeValue.builder().s(userId).build());
+		
+	    Map<String, String> expressionAttributeNames = new HashMap<>();
+	    expressionAttributeNames.put("#nm", "name");
+	    
+	    Map<String, AttributeValue> expressionAttributeValues = new HashMap<>();
+	    expressionAttributeValues.put(":newName", AttributeValue.builder().s(newName).build());
+	    
+	    UpdateItemRequest request = UpdateItemRequest.builder()
+	            .tableName(tableName)
+	            .key(key)
+	            .updateExpression("SET #nm = :newName")
+	            .conditionExpression("attribute_exists(userId)")  //only update if record exists
+	            .expressionAttributeNames(expressionAttributeNames)
+	            .expressionAttributeValues(expressionAttributeValues)
+	            .build();
+
+	    dynamoDb.updateItem(request);
+	    log.info("Successfully updated userId={}", userId); 
+	}
 }
