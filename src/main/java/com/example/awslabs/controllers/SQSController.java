@@ -1,6 +1,7 @@
 package com.example.awslabs.controllers;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest;
 import software.amazon.awssdk.services.sqs.model.Message;
 import com.example.awslabs.service.SQSService;
 
@@ -47,5 +47,41 @@ public class SQSController {
 		return ResponseEntity.ok(messageBodies);
 	}
 	
+	@GetMapping("/list")
+	public ResponseEntity<List<String>> listQueues()
+	{
+		log.info("API request → list SQS queues");
+		List<String> queueUrls = sqsService.listQueues();
+		return ResponseEntity.ok(queueUrls);
+	}
+
+	@PostMapping("/create")
+	public ResponseEntity<String> createQueue(@RequestParam("queueName") String queueName) {
+		log.info("API request → create SQS queue: {}", queueName);
+		String queueUrl = sqsService.createQueue(queueName);
+		return ResponseEntity.ok("Queue created: " + queueUrl);
+	}
+	
+	@PostMapping("/delete")
+    public ResponseEntity<String> deleteQueue(@RequestParam("queueUrl") String queueUrl) {
+        log.info("API request → delete SQS queue: {}", queueUrl);
+        sqsService.deleteQueue(queueUrl);
+        return ResponseEntity.ok("Queue deleted: " + queueUrl);
+    }
+
+    @PostMapping("/sendWithAttributes")
+    public ResponseEntity<String> sendMessageWithAttributes(
+            @RequestParam("queueUrl") String queueUrl,
+            @RequestParam("message") String message,
+            @RequestParam Map<String, String> allParams) {
+
+        // Remove known params to treat the rest as attributes
+        allParams.remove("queueUrl");
+        allParams.remove("message");
+
+        log.info("API request → send message with attributes to SQS");
+        sqsService.sendMessageWithAttributes(queueUrl, message, allParams);
+        return ResponseEntity.ok("Message with attributes sent successfully: " + message);
+    }
 	
 }
