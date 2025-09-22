@@ -72,15 +72,10 @@ public class SQSController {
     @PostMapping("/sendWithAttributes")
     public ResponseEntity<String> sendMessageWithAttributes(
             @RequestParam("queueUrl") String queueUrl,
-            @RequestParam("message") String message,
-            @RequestParam Map<String, String> allParams) {
-
-        // Remove known params to treat the rest as attributes
-        allParams.remove("queueUrl");
-        allParams.remove("message");
+            @RequestParam("message") String message) {
 
         log.info("API request → send message with attributes to SQS");
-        sqsService.sendMessageWithAttributes(queueUrl, message, allParams);
+        sqsService.sendMessageWithCustomAttributes(queueUrl, message);
         return ResponseEntity.ok("Message with attributes sent successfully: " + message);
     }
 	

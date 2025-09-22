@@ -1,5 +1,6 @@
 package com.example.awslabs.service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -7,14 +8,14 @@ import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.services.sqs.SqsClient;
-import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
-import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.CreateQueueRequest;
 import software.amazon.awssdk.services.sqs.model.CreateQueueResponse;
 import software.amazon.awssdk.services.sqs.model.DeleteQueueRequest;
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
+import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 
 @Slf4j
 @Service
@@ -78,19 +79,21 @@ public class SQSService {
         sqsClient.deleteQueue(request);
         log.info("Deleted queue: {}", queueUrl);
     }
+    
+    public void sendMessageWithCustomAttributes(String queueUrl, String messageBody) {
+        Map<String, MessageAttributeValue> messageAttributes = new HashMap<>();
+        messageAttributes.put("AttributeName", MessageAttributeValue.builder()
+            .dataType("String")
+            .stringValue("AttributeValue")
+            .build());
 
-    public void sendMessageWithAttributes(String queueUrl, String messageBody, Map<String, String> attributes) {
-        SendMessageRequest.Builder builder = SendMessageRequest.builder()
-                .queueUrl(queueUrl)
-                .messageBody(messageBody);
+        SendMessageRequest request = SendMessageRequest.builder()
+            .queueUrl(queueUrl)
+            .messageBody(messageBody)
+            .messageAttributes(messageAttributes)
+            .build();
 
-        if (attributes != null && !attributes.isEmpty()) {
-            attributes.forEach((key, value) -> builder.messageAttributesEntry(
-                    key, MessageAttributeValue.builder().stringValue(value).dataType("String").build()
-            ));
-        }
-
-        sqsClient.sendMessage(builder.build());
-        log.info("Message with attributes sent to queue {}: {}", queueUrl, messageBody);
+        sqsClient.sendMessage(request);
+        log.info("Message with custom attributes sent to queue {}: {}", queueUrl, messageBody);
     }
 }
