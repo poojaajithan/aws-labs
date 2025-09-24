@@ -9,6 +9,8 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sns.SnsClient;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -58,5 +60,18 @@ public class AwsConfig {
 		
 		log.debug("SqsClient created: {}", sqsClient);
 		return sqsClient;
+	}
+
+	@Bean
+	public SnsClient snsClient() {
+		log.info("Creating SnsClient for Mumbai region with default profile");
+
+		SnsClient snsClient = SnsClient.builder()
+				.region(Region.of(awsRegion))
+				.credentialsProvider(ProfileCredentialsProvider.create(awsProfile))
+				.build();
+
+		log.debug("SnsClient created: {}", snsClient);
+		return snsClient;
 	}
 }
