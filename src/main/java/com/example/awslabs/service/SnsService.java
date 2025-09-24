@@ -14,6 +14,7 @@ import software.amazon.awssdk.services.sns.model.PublishRequest;
 import software.amazon.awssdk.services.sns.model.PublishResponse;
 import software.amazon.awssdk.services.sns.model.SubscribeRequest;
 import software.amazon.awssdk.services.sns.model.SubscribeResponse;
+import com.example.awslabs.dto.SubscribeRequestDto;
 
 @Service
 @Slf4j
@@ -43,7 +44,7 @@ public class SnsService {
         return response;
     }
 
-    public SubscribeResponse subscribe(SubscribeResponseDto dto) {
+    public SubscribeResponse subscribe(SubscribeRequestDto dto) {
         log.info("Subscribing to topic ARN: {} with protocol: {} and endpoint: {}", dto.getTopicArn(), dto.getProtocol(), dto.getEndpoint());
         SubscribeRequest request = SubscribeRequest.builder()
                 .topicArn(dto.getTopicArn())
