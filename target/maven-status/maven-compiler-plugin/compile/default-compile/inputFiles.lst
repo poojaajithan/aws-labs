@@ -15,4 +15,5 @@
 /Users/poojaraviraj/eclipse-workspace/aws-labs-1/src/main/java/com/example/awslabs/service/DynamoDbService.java
 /Users/poojaraviraj/eclipse-workspace/aws-labs-1/src/main/java/com/example/awslabs/service/S3Service.java
 /Users/poojaraviraj/eclipse-workspace/aws-labs-1/src/main/java/com/example/awslabs/service/SQSService.java
+/Users/poojaraviraj/eclipse-workspace/aws-labs-1/src/main/java/com/example/awslabs/service/STSService.java
 /Users/poojaraviraj/eclipse-workspace/aws-labs-1/src/main/java/com/example/awslabs/service/SnsService.java

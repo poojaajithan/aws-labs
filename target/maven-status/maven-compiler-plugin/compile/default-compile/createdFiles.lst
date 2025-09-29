@@ -11,6 +11,7 @@ com/example/awslabs/controllers/SQSController.class
 com/example/awslabs/controllers/SnsController.class
 com/example/awslabs/service/DynamoDbService.class
 com/example/awslabs/config/AwsConfig.class
+com/example/awslabs/service/STSService.class
 com/example/awslabs/dto/PublishRequestDto.class
 com/example/awslabs/controllers/DynamoDbController.class
 com/example/awslabs/service/S3Service.class
