@@ -1,0 +1,7 @@
+post_build:
+  commands:
+    - echo "Deploying Lambda"
+    - aws lambda update-function-code \
+        --function-name AWSLabs-SqsHandler \
+        --zip-file fileb://target/aws-labs-1.0-SNAPSHOT.jar \
+        --region ap-south-1
