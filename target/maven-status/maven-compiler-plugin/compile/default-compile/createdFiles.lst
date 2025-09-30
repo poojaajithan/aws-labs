@@ -17,4 +17,5 @@ com/example/awslabs/dto/PublishRequestDto.class
 com/example/awslabs/controllers/DynamoDbController.class
 com/example/awslabs/service/S3Service.class
 com/example/awslabs/exceptions/GlobalExceptionHandler.class
+com/example/awslabs/lambda/S3LambdaHandler.class
 com/example/awslabs/service/SnsService.class
