@@ -15,6 +15,7 @@ public class S3LambdaHandler implements RequestHandler<APIGatewayProxyRequestEve
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent event, Context context) {
         String method = event.getHttpMethod();
+        System.out.println("HTTP Method: " + method);
         String response = "";
 
         if ("POST".equalsIgnoreCase(method) && event.getPath().equals("/upload")) {

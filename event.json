@@ -1,0 +1,8 @@
+{
+  "httpMethod": "POST",
+  "path": "/upload",
+  "queryStringParameters": {
+    "filename": "test.txt"
+  },
+  "body": "Hello, Lambda!"
+}
