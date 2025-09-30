@@ -11,6 +11,7 @@
 /Users/poojaraviraj/eclipse-workspace/aws-labs-1/src/main/java/com/example/awslabs/dto/SubscribeRequestDto.java
 /Users/poojaraviraj/eclipse-workspace/aws-labs-1/src/main/java/com/example/awslabs/exceptions/ApiError.java
 /Users/poojaraviraj/eclipse-workspace/aws-labs-1/src/main/java/com/example/awslabs/exceptions/GlobalExceptionHandler.java
+/Users/poojaraviraj/eclipse-workspace/aws-labs-1/src/main/java/com/example/awslabs/lambda/HelloWorldLambda.java
 /Users/poojaraviraj/eclipse-workspace/aws-labs-1/src/main/java/com/example/awslabs/lambda/SqsLambdaHandler.java
 /Users/poojaraviraj/eclipse-workspace/aws-labs-1/src/main/java/com/example/awslabs/service/DynamoDbService.java
 /Users/poojaraviraj/eclipse-workspace/aws-labs-1/src/main/java/com/example/awslabs/service/S3Service.java

@@ -2,6 +2,7 @@ com/example/awslabs/AwsLabsApplication.class
 com/example/awslabs/HelloController.class
 com/example/awslabs/service/SQSService.class
 com/example/awslabs/dto/DynamoRecordDTO.class
+com/example/awslabs/lambda/HelloWorldLambda.class
 com/example/awslabs/exceptions/ApiError.class
 com/example/awslabs/dto/SubscribeRequestDto.class
 com/example/awslabs/lambda/SqsLambdaHandler.class
